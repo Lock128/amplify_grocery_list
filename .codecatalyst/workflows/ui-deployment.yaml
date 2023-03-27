@@ -49,12 +49,12 @@ Actions:
         - name: Flutter Build Web
           uses: subosito/flutter-action@v2.8.0
           with:
-            flutter-version: "3.7.1"
-            channel: "stable"
+            flutter-version: 3.7.1
+            channel: stable
         - name: Java Install
           uses: actions/setup-java@v2
           with:
-            distribution: "zulu"
+            distribution: zulu
             java-version: "11"
         - name: Setup Android SDK
           uses: android-actions/setup-android@v2
@@ -68,8 +68,8 @@ Actions:
         - run: flutter build web
     Environment:
       Connections:
-        - Role: CodeCatalystPreviewDevelopmentAdministrator-rnxk91
-          Name: "johannes-playground"
+        - Role: CodeCatalystPreviewDevelopmentAdministrator-g5ghp1
+          Name: "215381813818"
       Name: development
 
   UploadToS3:
@@ -89,21 +89,28 @@ Actions:
     Configuration:
       Steps:
         - Run: aws s3 ls
-        - Run: BUCKET_NAME=$(aws cloudformation describe-stacks --stack-name "matchcenter-frontend-web" --query "Stacks[0].Outputs[0].OutputValue" --region eu-central-1 --output text)
+        - Run: BUCKET_NAME=$(aws cloudformation describe-stacks --stack-name
+            "amplify_grocery_list-frontend-web" --query
+            "Stacks[0].Outputs[0].OutputValue" --region eu-central-1 --output
+            text)
         - Run: echo name=$BUCKET_NAME
         - Run: aws s3 sync $CATALYST_SOURCE_DIR_FlutterBuildResults/ui/build/web/.
             s3://$BUCKET_NAME
-        - Run: CLOUDFRONT_ID=$(aws cloudformation describe-stacks --stack-name "matchcenter-frontend-web" --query "Stacks[0].Outputs[1].OutputValue" --region eu-central-1 --output text)            
+        - Run: CLOUDFRONT_ID=$(aws cloudformation describe-stacks --stack-name
+            "amplify_grocery_list-frontend-web" --query
+            "Stacks[0].Outputs[1].OutputValue" --region eu-central-1 --output
+            text)
         - Run: echo cloudfrontid=$CLOUDFRONT_ID
-        - Run: aws cloudfront create-invalidation --distribution-id "$CLOUDFRONT_ID" --paths "/*"
+        - Run: aws cloudfront create-invalidation --distribution-id "$CLOUDFRONT_ID"
+            --paths "/*"
     Compute:
       Type: Lambda
     DependsOn:
       - BuildAndTestUIWeb
     Environment:
       Connections:
-        - Role: CodeCatalystPreviewDevelopmentAdministrator-rnxk91
-          Name: johannes-playground
+        - Role: CodeCatalystPreviewDevelopmentAdministrator-g5ghp1
+          Name: "215381813818"
       Name: development
   BuildAndTestUIApk:
     Identifier: aws/github-actions-runner@v1
@@ -128,12 +135,12 @@ Actions:
         - name: Flutter Build Web
           uses: subosito/flutter-action@v2.8.0
           with:
-            flutter-version: "3.7.1"
-            channel: "stable"
+            flutter-version: 3.7.1
+            channel: stable
         - name: Java Install
           uses: actions/setup-java@v2
           with:
-            distribution: "zulu"
+            distribution: zulu
             java-version: "11"
         - name: Setup Android SDK
           uses: android-actions/setup-android@v2
@@ -145,8 +152,8 @@ Actions:
         - run: flutter build apk
     Environment:
       Connections:
-        - Role: CodeCatalystPreviewDevelopmentAdministrator-rnxk91
-          Name: "johannes-playground"
+        - Role: CodeCatalystPreviewDevelopmentAdministrator-g5ghp1
+          Name: "215381813818"
       Name: development
   UploadToS3Apk:
     Identifier: aws/build@v1
@@ -164,15 +171,19 @@ Actions:
         - CLOUDFRONT_ID
     Configuration:
       Steps:
-        - Run: BUCKET_NAME=$(aws cloudformation describe-stacks --stack-name "matchcenter-frontend-apk" --query "Stacks[0].Outputs[0].OutputValue" --region eu-central-1 --output text)
+        - Run: BUCKET_NAME=$(aws cloudformation describe-stacks --stack-name
+            "amplify_grocery_list-frontend-apk" --query
+            "Stacks[0].Outputs[0].OutputValue" --region eu-central-1 --output
+            text)
         - Run: echo name=$BUCKET_NAME
-        - Run: aws s3 sync $CATALYST_SOURCE_DIR_FlutterBuildResultsApk/ui/build/. s3://$BUCKET_NAME
+        - Run: aws s3 sync $CATALYST_SOURCE_DIR_FlutterBuildResultsApk/ui/build/.
+            s3://$BUCKET_NAME
     Compute:
       Type: Lambda
     DependsOn:
       - BuildAndTestUIApk
     Environment:
       Connections:
-        - Role: CodeCatalystPreviewDevelopmentAdministrator-rnxk91
-          Name: johannes-playground
+        - Role: CodeCatalystPreviewDevelopmentAdministrator-g5ghp1
+          Name: "215381813818"
       Name: development
