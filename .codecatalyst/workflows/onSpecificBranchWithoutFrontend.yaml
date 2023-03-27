@@ -1,0 +1,111 @@
+Name: onSpecificBranchWithoutFrontend
+RunMode: SUPERSEDED
+SchemaVersion: "1.0"
+Triggers:
+  - Type: PUSH
+    Branches:
+      - feature/workflow-adjustments-inactive
+Actions:
+  BuildAndTestLambda:
+    Identifier: aws/managed-test@v1
+    Inputs:
+      Sources:
+        - WorkflowSource
+    Outputs:
+      Artifacts:
+        - Name: buildlambda
+          Files:
+            - "ui/build/**/*"
+            - "cdk-app/**/*"
+      AutoDiscoverReports:
+        IncludePaths:
+          - "**/*"
+        ExcludePaths:
+          - "*/.aws/workflows/*"
+        ReportNamePrefix: AutoDiscovered
+        Enabled: true
+    Configuration:
+      Steps:
+        - Run: cd cdk-app;npm install
+  CDKBootstrapAction:
+    Identifier: aws/cdk-bootstrap@v1
+    Configuration:
+      Region: eu-central-1
+    Compute:
+      Type: Lambda
+    Environment:
+      Connections:
+        - Role: CodeCatalystPreviewDevelopmentAdministrator-rnxk91
+          Name: johannes-playground
+      Name: development
+    Inputs:
+      Sources:
+        - WorkflowSource
+  DeployMatchCenter:
+    Identifier: aws/cdk-deploy@v1
+    Configuration:
+      CdkRootPath: cdk-app
+      Context: '{"stack_name":"matchcenter-dev"}'
+      Tags: '{"project":"matchcenter.aws-community-day.de"}'
+      Region: eu-central-1
+      StackName: matchcenter-dev
+    Compute:
+      Type: Lambda
+    Environment:
+      Connections:
+        - Role: CodeCatalystPreviewDevelopmentAdministrator-rnxk91
+          Name: johannes-playground
+      Name: development
+    DependsOn:
+      - CDKBootstrapAction
+    Inputs:
+      Variables:
+        - Name: Frontend
+          Value: "false"
+      Sources:
+        - WorkflowSource
+  UploadTestdata:
+    Identifier: aws/github-actions-runner@v1
+    Compute:
+      Type: EC2
+    Inputs:
+      Sources:
+        - WorkflowSource
+    DependsOn:
+      - DeployMatchCenter
+    Configuration:
+      Steps:
+        - run: cd cdk-app;npm install
+        - run: cd cdk-app;npx projen upload-testdata-ci
+            ${DeployMatchCenter.sportsDataServicematchesTableName}
+            ${DeployMatchCenter.sportsDataServiceteamsTableName}
+    Environment:
+      Connections:
+        - Role: CodeCatalystPreviewDevelopmentAdministrator-rnxk91
+          Name: "johannes-playground"
+      Name: development
+  DeployLambdas:
+    Identifier: aws/cdk-deploy@v1
+    Configuration:
+      CdkRootPath: cdk-app
+      Context: '{"stack_name":"frontend-apk-dev"}'
+      Tags: '{"project":"matchcenter.aws-community-day.de"}'
+      Region: eu-central-1
+      StackName: lambdas-dev
+    Compute:
+      Type: Lambda
+    Environment:
+      Connections:
+        - Role: CodeCatalystPreviewDevelopmentAdministrator-rnxk91
+          Name: johannes-playground
+      Name: development
+    DependsOn:
+      - CDKBootstrapAction
+      - DeployMatchCenter
+      - BuildAndTestLambda
+    Inputs:
+      Variables:
+        - Name: Frontend
+          Value: "false"       
+      Sources:
+        - WorkflowSource
