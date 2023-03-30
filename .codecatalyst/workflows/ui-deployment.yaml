@@ -9,7 +9,7 @@ Triggers:
     FilesChanged:
       - ".*"
 Actions:
-  NpmInstall:
+  SetUpPreRequisites:
     Identifier: aws/build@v1
     Inputs:
       Sources:
@@ -71,7 +71,8 @@ Actions:
         - Role: CodeCatalystPreviewDevelopmentAdministrator-g5ghp1
           Name: "215381813818"
       Name: development
-
+    DependsOn:
+      - SetUpPreRequisites
   UploadToS3:
     Identifier: aws/build@v1
     Inputs:
@@ -155,6 +156,8 @@ Actions:
         - Role: CodeCatalystPreviewDevelopmentAdministrator-g5ghp1
           Name: "215381813818"
       Name: development
+    DependsOn:
+      - SetUpPreRequisites      
   UploadToS3Apk:
     Identifier: aws/build@v1
     Inputs:
