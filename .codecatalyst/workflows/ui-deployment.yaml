@@ -64,6 +64,7 @@ Actions:
         - run: flutter clean
         - run: flutter pub get
         - run: flutter precache --web
+        - run: flutter analyze
         - run: flutter test --coverage
         - run: flutter build web
     Environment:
